@@ -1,0 +1,49 @@
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variables de entorno
+.env
+.env.local
+.env.development
+.env.production
+
+# Credenciales de Google Sheets
+credentials.json
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos temporales
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Build
+dist/
+build/
+
+# PM2
+.pm2/
+
+# Coverage
+coverage/
+.nyc_output/
+
+
+
+
