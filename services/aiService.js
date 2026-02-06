@@ -236,7 +236,7 @@ async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
       model: OPENAI_MODEL,
       messages: messages,
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 1200,
       presence_penalty: 0.6,
       frequency_penalty: 0.3
     });
