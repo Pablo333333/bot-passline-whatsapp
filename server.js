@@ -42,10 +42,10 @@ app.get('/health', (req, res) => {
 });
 
 /**
- * POST /webhook/wati
+ * POST /webhook
  * Webhook para recibir mensajes entrantes de WATI
  */
-app.post('/webhook/wati', async (req, res) => {
+app.post('/webhook', async (req, res) => {
   try {
     console.log('📩 Mensaje recibido de WATI:', JSON.stringify(req.body, null, 2));
 
@@ -212,9 +212,9 @@ app.listen(PORT, async () => {
   console.log('═══════════════════════════════════════════');
   console.log(`🤖 Bot Passline iniciado correctamente`);
   console.log(`🌐 Servidor: http://localhost:${PORT}`);
-  console.log(`📡 Webhook WATI: http://localhost:${PORT}/webhook/wati`);
+  console.log(`📡 Webhook WATI: http://localhost:${PORT}/webhook`);
   console.log(`💳 Webhook Passline: http://localhost:${PORT}/webhook/passline`);
-  console.log(`⚙️  Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`⚙️  Entorno: ${process.env.NODE_ENV || 'production'}`);
   console.log('═══════════════════════════════════════════');
   
   // Probar conexión con Google Sheets
