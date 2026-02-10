@@ -50,25 +50,24 @@ function getConversationHistory(phoneNumber) {
  */
 async function getCachedEvents() {
   const now = Date.now();
+  const cacheAge = now - eventsCache.lastUpdate;
   
-  // Si el caché es válido, devolverlo
-  if (eventsCache.data.length > 0 && (now - eventsCache.lastUpdate) < eventsCache.CACHE_DURATION) {
-    console.log(`📋 Usando eventos desde caché (${eventsCache.data.length} eventos)`);
+  // Si el caché es válido, devolverlo (RÁPIDO)
+  if (eventsCache.data.length > 0 && cacheAge < eventsCache.CACHE_DURATION) {
     return eventsCache.data;
   }
   
-  // Actualizar caché
+  // Actualizar caché solo cuando sea necesario
   try {
-    console.log('🔄 Actualizando caché de eventos...');
+    console.log('🔄 Actualizando caché...');
     const eventos = await sheetsService.getEvents();
     eventsCache.data = eventos;
     eventsCache.lastUpdate = now;
-    console.log(`✅ Caché actualizado con ${eventos.length} eventos`);
+    console.log(`✅ Caché: ${eventos.length} eventos`);
     return eventos;
   } catch (error) {
-    console.warn('⚠️ Error actualizando caché de eventos:', error.message);
-    // Devolver caché anterior si existe
-    return eventsCache.data;
+    console.warn('⚠️ Error caché:', error.message);
+    return eventsCache.data; // Usar caché anterior
   }
 }
 

@@ -55,8 +55,6 @@ async function getSheetConnection() {
  */
 async function getEvents() {
   try {
-    console.log('📊 Obteniendo eventos desde Google Sheets...');
-    
     const doc = await getSheetConnection();
     const sheet = doc.sheetsByTitle['Eventos'];
     
@@ -66,7 +64,7 @@ async function getEvents() {
 
     const rows = await sheet.getRows();
     
-    // Mapear y filtrar eventos activos
+    // Mapear y filtrar eventos activos (sin logs para velocidad)
     const eventos = rows
       .filter(row => {
         const estado = row.get('Estado') || '';
@@ -81,11 +79,10 @@ async function getEvents() {
         estado: row.get('Estado') || ''
       }));
 
-    console.log(`✅ ${eventos.length} eventos activos encontrados`);
     return eventos;
 
   } catch (error) {
-    console.error('❌ Error obteniendo eventos:', error.message);
+    console.error('❌ Error eventos:', error.message);
     throw error;
   }
 }

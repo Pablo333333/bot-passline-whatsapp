@@ -25,29 +25,11 @@ const watiClient = axios.create({
   timeout: 30000 // 30 segundos
 });
 
-// Interceptor para logging
-watiClient.interceptors.request.use(
-  (config) => {
-    console.log(`📤 WATI Request: ${config.method?.toUpperCase()} ${config.url}`);
-    return config;
-  },
-  (error) => {
-    console.error('❌ WATI Request Error:', error.message);
-    return Promise.reject(error);
-  }
-);
-
+// Interceptors optimizados (sin logs verbosos para velocidad)
 watiClient.interceptors.response.use(
-  (response) => {
-    console.log(`✅ WATI Response: ${response.status} ${response.config.url}`);
-    console.log('📦 WATI Response Data:', JSON.stringify(response.data, null, 2));
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error('❌ WATI Response Error:', error.response?.status, error.message);
-    if (error.response?.data) {
-      console.error('📦 WATI Error Data:', JSON.stringify(error.response.data, null, 2));
-    }
+    console.error('❌ WATI:', error.response?.status, error.message);
     return Promise.reject(error);
   }
 );
@@ -71,12 +53,7 @@ async function sendSessionMessage(phoneNumber, message) {
     // Construir URL con query parameter
     const url = `/api/v1/sendSessionMessage/${formattedPhone}?messageText=${encodedMessage}`;
 
-    console.log(`💬 Enviando mensaje de sesión a ${formattedPhone}...`);
-    console.log(`📝 Mensaje original: ${message.substring(0, 100)}...`);
-    console.log(`📏 Longitud del mensaje: ${message?.length || 0} caracteres`);
-    console.log(`🔗 URL completa: ${WATI_BASE_URL}${url}`);
-
-    // POST sin body (el texto va en la URL)
+    // POST sin body (el texto va en la URL) - SIN LOGS para velocidad
     const response = await watiClient.post(url);
 
     return {
@@ -86,16 +63,7 @@ async function sendSessionMessage(phoneNumber, message) {
     };
 
   } catch (error) {
-    console.error('❌ Error enviando mensaje de sesión:', error.response?.data || error.message);
-    console.error('❌ Status Code:', error.response?.status);
-    console.error('❌ Response completa:', JSON.stringify(error.response?.data, null, 2));
-    
-    // Si el error es por ventana de 24 horas, dar un mensaje más claro
-    if (error.response?.data?.info === 'message text can not be empty') {
-      console.warn('⚠️  POSIBLE CAUSA: Ventana de 24 horas de WhatsApp expirada');
-      console.warn('   El número debe haber iniciado la conversación en las últimas 24 horas');
-      console.warn('   O usa Template Messages para iniciar conversaciones');
-    }
+    console.error('❌ WATI error:', error.response?.status, error.message);
     
     throw {
       success: false,

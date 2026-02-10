@@ -51,30 +51,29 @@ app.get('/health', (req, res) => {
  */
 app.post('/webhook', async (req, res) => {
   try {
-    console.log('📩 Mensaje recibido de WATI:', JSON.stringify(req.body, null, 2));
+    const { waId, text, senderName, eventType } = req.body;
 
-    const { 
-      waId,           // Número de teléfono del usuario
-      text,           // Texto del mensaje
-      senderName,     // Nombre del usuario
-      eventType       // Tipo de evento
-    } = req.body;
-
-    // Verificar que sea un mensaje de texto
-    if (eventType !== 'message' || !text || !waId) {
-      console.log('⚠️ Evento no procesable o sin texto');
-      return res.status(200).json({ status: 'ignored' });
-    }
-
-    // Responder inmediatamente al webhook (WATI requiere respuesta rápida)
+    // Responder INMEDIATAMENTE a WATI (crítico para velocidad)
     res.status(200).json({ status: 'received' });
 
-    // Procesar el mensaje de forma asíncrona
-    processUserMessage(waId, text, senderName);
+    // Verificar que sea un mensaje de texto válido
+    if (eventType !== 'message' || !text || !waId) {
+      console.log('⚠️ Evento ignorado');
+      return;
+    }
+
+    console.log(`📩 ${senderName}: "${text.substring(0, 50)}..."`);
+
+    // Procesar mensaje de forma asíncrona (sin await para no bloquear)
+    setImmediate(() => {
+      processUserMessage(waId, text, senderName).catch(error => {
+        console.error('❌ Error procesando mensaje:', error.message);
+      });
+    });
 
   } catch (error) {
-    console.error('❌ Error en webhook WATI:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Webhook error:', error.message);
+    // No enviar respuesta aquí porque ya se envió arriba
   }
 });
 
@@ -135,30 +134,25 @@ app.post('/webhook/passline', async (req, res) => {
  */
 async function processUserMessage(phoneNumber, messageText, userName) {
   try {
-    console.log(`🤖 Procesando mensaje de ${userName} (${phoneNumber}): "${messageText}"`);
-
-    // 1. Analizar el perfil del usuario y generar respuesta con IA
+    // Procesar con IA (única llamada, sin logs verbosos)
     const aiResponse = await aiService.processMessage(messageText, phoneNumber, userName);
 
-    console.log(`💡 IA identificó perfil: ${aiResponse.userProfile}`);
-    console.log(`📝 Respuesta generada: ${aiResponse.response.substring(0, 100)}...`);
-
-    // 2. Enviar respuesta al usuario por WhatsApp
+    // Enviar respuesta por WhatsApp
     await watiService.sendSessionMessage(phoneNumber, aiResponse.response);
 
-    console.log(`✅ Respuesta enviada a ${phoneNumber}`);
+    console.log(`✅ ${userName}: ${aiResponse.userProfile}`);
 
   } catch (error) {
-    console.error('❌ Error procesando mensaje:', error.message);
+    console.error('❌ Error:', error.message);
     
-    // Enviar mensaje de error al usuario
+    // Enviar mensaje de error sin logs adicionales
     try {
       await watiService.sendSessionMessage(
         phoneNumber, 
-        '😅 Disculpa, tuve un problema procesando tu mensaje. ¿Podrías intentarlo de nuevo?'
+        '😅 Disculpa, tuve un problema. ¿Podrías intentarlo de nuevo?'
       );
     } catch (sendError) {
-      console.error('❌ Error enviando mensaje de error:', sendError.message);
+      // Error silencioso para no saturar logs
     }
   }
 }
