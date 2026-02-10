@@ -3,19 +3,21 @@ const { POLITICAS_PASSLINE, METODOS_PAGO, FAQ, SOPORTE, COMISIONES_ORGANIZADOR, 
 const sheetsService = require('./sheetsService');
 
 /**
- * Servicio de IA usando OpenAI para procesar mensajes y detectar perfiles de usuario
- * Perfiles: Comprador (busca eventos/tickets) o Organizador/Productor (quiere crear eventos)
+ * Servicio de IA optimizado para respuestas rápidas
+ * - Caché de eventos (10 minutos)
+ * - Parámetros OpenAI optimizados
+ * - Flujo directo simplificado
  */
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
 
-// Validar configuración (warning en lugar de error para no bloquear)
+// Validar configuración
 if (!OPENAI_API_KEY) {
   console.warn('⚠️  WARNING: OPENAI_API_KEY no está configurado en las variables de entorno');
 }
 
-// Inicializar cliente de OpenAI (solo si hay API key)
+// Inicializar cliente de OpenAI
 let openai = null;
 if (OPENAI_API_KEY && OPENAI_API_KEY !== 'sk-temporal-key-cambiame') {
   openai = new OpenAI({
@@ -23,7 +25,14 @@ if (OPENAI_API_KEY && OPENAI_API_KEY !== 'sk-temporal-key-cambiame') {
   });
 }
 
-// Almacenamiento temporal de conversaciones (en producción usar Redis o base de datos)
+// Caché global para eventos (actualización cada 10 minutos)
+let eventsCache = {
+  data: [],
+  lastUpdate: 0,
+  CACHE_DURATION: 10 * 60 * 1000 // 10 minutos en millisegundos
+};
+
+// Almacenamiento temporal de conversaciones
 const conversationHistory = new Map();
 
 /**
@@ -37,14 +46,41 @@ function getConversationHistory(phoneNumber) {
 }
 
 /**
- * Agregar mensaje al historial
+ * Obtener eventos desde caché o Google Sheets (actualización cada 10 minutos)
+ */
+async function getCachedEvents() {
+  const now = Date.now();
+  
+  // Si el caché es válido, devolverlo
+  if (eventsCache.data.length > 0 && (now - eventsCache.lastUpdate) < eventsCache.CACHE_DURATION) {
+    console.log(`📋 Usando eventos desde caché (${eventsCache.data.length} eventos)`);
+    return eventsCache.data;
+  }
+  
+  // Actualizar caché
+  try {
+    console.log('🔄 Actualizando caché de eventos...');
+    const eventos = await sheetsService.getEvents();
+    eventsCache.data = eventos;
+    eventsCache.lastUpdate = now;
+    console.log(`✅ Caché actualizado con ${eventos.length} eventos`);
+    return eventos;
+  } catch (error) {
+    console.warn('⚠️ Error actualizando caché de eventos:', error.message);
+    // Devolver caché anterior si existe
+    return eventsCache.data;
+  }
+}
+
+/**
+ * Agregar mensaje al historial (máximo 8 mensajes)
  */
 function addToHistory(phoneNumber, role, content) {
   const history = getConversationHistory(phoneNumber);
   history.push({ role, content });
   
-  // Mantener solo los últimos 10 mensajes para no exceder límites
-  if (history.length > 10) {
+  // Mantener solo los últimos 8 mensajes para optimizar velocidad
+  if (history.length > 8) {
     history.shift();
   }
   
@@ -172,7 +208,7 @@ Responde SIEMPRE en español de forma natural, conversacional y cercana. ¡Ayuda
 }
 
 /**
- * Procesar mensaje del usuario con IA
+ * Procesar mensaje del usuario con IA (optimizado para velocidad)
  * 
  * @param {string} messageText - Texto del mensaje del usuario
  * @param {string} phoneNumber - Número de teléfono del usuario
@@ -181,88 +217,67 @@ Responde SIEMPRE en español de forma natural, conversacional y cercana. ¡Ayuda
  */
 async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
   try {
-    console.log(`🤖 Procesando con IA: "${messageText}"`);
+    console.log(`🤖 Procesando: "${messageText.substring(0, 50)}..."`);
 
-    // Obtener eventos activos desde Google Sheets
-    let eventosActivos = [];
-    try {
-      eventosActivos = await sheetsService.getEvents();
-      console.log(`📊 ${eventosActivos.length} eventos cargados desde Google Sheets`);
-    } catch (sheetError) {
-      console.warn('⚠️ No se pudieron cargar eventos desde Sheets:', sheetError.message);
-      // Continuar sin eventos (el prompt manejará esto)
-    }
-
-    // Obtener historial de conversación
-    const history = getConversationHistory(phoneNumber);
-    
-    // Detectar perfil del usuario basado en el contenido
-    const userProfile = detectUserProfile(messageText, history);
-
-    // Si no hay cliente OpenAI configurado, usar respuestas predefinidas
+    // Si no hay OpenAI configurado, usar respuesta básica
     if (!openai) {
-      console.warn('⚠️  OpenAI no configurado, usando respuestas predefinidas');
-      
-      let response = '';
-      
-      if (userProfile === 'comprador') {
-        response = `¡Hola ${userName}! 👋\n\nVeo que buscas eventos. En Passline tenemos los mejores eventos para ti:\n\n🎵 Conciertos\n🎭 Teatro\n🎪 Festivales\n🎉 Fiestas\n\n¿Qué tipo de evento te interesa? Cuéntame más y te ayudo a encontrar el perfecto para ti.`;
-      } else if (userProfile === 'organizador') {
-        response = `¡Hola ${userName}! 👋\n\n¿Quieres crear eventos con Passline? ¡Excelente decisión!\n\n✨ Beneficios:\n• Solo 5% de comisión + IVA\n• Pagos en 24-48 horas\n• Dashboard completo\n• Control de acceso con QR\n• Soporte 24/7\n\n¿Te gustaría que te explique cómo funciona?`;
-      } else {
-        response = `¡Hola ${userName}! 👋 Bienvenido a Passline.\n\n¿En qué puedo ayudarte hoy?\n\n🎟️ Buscar eventos y comprar tickets\n🎪 Crear y gestionar mis propios eventos\n\nCuéntame qué necesitas.`;
-      }
-      
+      console.warn('⚠️ OpenAI no configurado');
       return {
-        response: response,
-        userProfile: userProfile,
-        conversationLength: history.length,
+        response: `¡Hola ${userName}! 👋 ¿En qué puedo ayudarte?\n\n🎟️ Buscar eventos\n🎪 Crear eventos`,
+        userProfile: 'unknown',
         usingAI: false
       };
     }
 
-    // Generar System Prompt dinámico con eventos actuales
+    // Obtener eventos desde caché (actualización automática cada 10 min)
+    const eventosActivos = await getCachedEvents();
+    
+    // Obtener historial (máximo 8 mensajes)
+    const history = getConversationHistory(phoneNumber);
+    
+    // Detectar perfil rápido
+    const userProfile = detectUserProfile(messageText, history);
+
+    // System prompt optimizado
     const systemPrompt = generateSystemPrompt(eventosActivos);
 
-    // Construir mensajes para OpenAI
+    // Mensajes para OpenAI (flujo directo)
     const messages = [
       { role: 'system', content: systemPrompt },
       ...history,
       { role: 'user', content: messageText }
     ];
 
-    // Llamar a OpenAI
+    // Llamada optimizada a OpenAI
     const completion = await openai.chat.completions.create({
       model: OPENAI_MODEL,
       messages: messages,
-      temperature: 0.7,
-      max_tokens: 1200,
-      presence_penalty: 0.6,
-      frequency_penalty: 0.3
+      temperature: 0.3,  // Reducido para mayor consistencia y velocidad
+      max_tokens: 500,   // Reducido para respuestas más rápidas
+      top_p: 0.9,        // Optimización adicional
+      frequency_penalty: 0.2
     });
 
     const aiResponse = completion.choices[0].message.content;
 
-    // Guardar en historial
+    // Actualizar historial
     addToHistory(phoneNumber, 'user', messageText);
     addToHistory(phoneNumber, 'assistant', aiResponse);
 
-    console.log(`✅ Respuesta generada con IA. Perfil: ${userProfile}`);
+    console.log(`✅ IA respondió (${userProfile})`);
 
     return {
       response: aiResponse,
       userProfile: userProfile,
-      conversationLength: history.length,
       tokensUsed: completion.usage?.total_tokens || 0,
       usingAI: true
     };
 
   } catch (error) {
-    console.error('❌ Error en OpenAI:', error.message);
+    console.error('❌ Error IA:', error.message);
     
-    // Respuesta de fallback
     return {
-      response: `Hola ${userName} 👋\n\n¿En qué puedo ayudarte hoy?\n\n¿Buscas eventos para asistir 🎟️ o quieres organizar tu propio evento? 🎪`,
+      response: `Hola ${userName} 👋\n\n¿En qué puedo ayudarte?\n\n🎟️ Eventos disponibles\n🎪 Crear tu evento`,
       userProfile: 'unknown',
       error: error.message,
       usingAI: false
@@ -325,81 +340,12 @@ function detectUserProfile(messageText, history = []) {
   }
 }
 
-/**
- * Generar respuesta personalizada según perfil detectado
- */
-async function generateProfileBasedResponse(userProfile, messageText, userName = 'Usuario') {
-  try {
-    let specificPrompt = '';
-    
-    if (userProfile === 'comprador') {
-      specificPrompt = `El usuario es un COMPRADOR buscando eventos. Responde con entusiasmo sobre eventos disponibles y proceso de compra.`;
-    } else if (userProfile === 'organizador') {
-      specificPrompt = `El usuario es un ORGANIZADOR/PRODUCTOR. Responde profesionalmente sobre cómo crear eventos y beneficios de la plataforma.`;
-    } else {
-      specificPrompt = `No está claro el perfil. Pregunta amablemente si busca eventos para asistir o quiere organizar uno.`;
-    }
-
-    const messages = [
-      { role: 'system', content: SYSTEM_PROMPT + '\n\n' + specificPrompt },
-      { role: 'user', content: messageText }
-    ];
-
-    const completion = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 400
-    });
-
-    return completion.choices[0].message.content;
-
-  } catch (error) {
-    console.error('❌ Error generando respuesta:', error.message);
-    throw error;
-  }
-}
-
-/**
- * Analizar intención del usuario
- */
-async function analyzeIntent(messageText) {
-  try {
-    const messages = [
-      {
-        role: 'system',
-        content: `Analiza el mensaje del usuario y devuelve SOLO una palabra que represente su intención principal:
-        - comprar: quiere comprar tickets
-        - buscar: busca información de eventos
-        - crear: quiere crear/organizar evento
-        - informacion: pregunta general sobre la plataforma
-        - ayuda: necesita soporte
-        - otro: otra intención`
-      },
-      { role: 'user', content: messageText }
-    ];
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: messages,
-      temperature: 0.3,
-      max_tokens: 10
-    });
-
-    return completion.choices[0].message.content.trim().toLowerCase();
-
-  } catch (error) {
-    console.error('❌ Error analizando intención:', error.message);
-    return 'otro';
-  }
-}
 
 module.exports = {
   processMessage,
   detectUserProfile,
-  generateProfileBasedResponse,
-  analyzeIntent,
   clearHistory,
-  getConversationHistory
+  getConversationHistory,
+  getCachedEvents
 };
 
