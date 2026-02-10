@@ -14,6 +14,33 @@ const sheetsService = require('./services/sheetsService');
 const app = express();
 const PORT = process.env.PORT;
 
+// Cache para detectar mensajes duplicados (WATI puede reintentar webhooks)
+const processedMessages = new Map();
+const DUPLICATE_CACHE_DURATION = 30 * 1000; // 30 segundos
+
+/**
+ * Verificar si un mensaje ya fue procesado recientemente
+ */
+function isDuplicateMessage(waId, text, timestamp = Date.now()) {
+  const messageKey = `${waId}:${text.substring(0, 100)}`; // Usar primeros 100 chars como key
+  
+  // Limpiar mensajes antiguos del cache
+  for (const [key, time] of processedMessages.entries()) {
+    if (timestamp - time > DUPLICATE_CACHE_DURATION) {
+      processedMessages.delete(key);
+    }
+  }
+  
+  // Verificar si ya existe
+  if (processedMessages.has(messageKey)) {
+    return true;
+  }
+  
+  // Marcar como procesado
+  processedMessages.set(messageKey, timestamp);
+  return false;
+}
+
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -59,6 +86,12 @@ app.post('/webhook', async (req, res) => {
     // Verificar que sea un mensaje de texto válido
     if (eventType !== 'message' || !text || !waId) {
       console.log('⚠️ Evento ignorado');
+      return;
+    }
+
+    // Verificar duplicados (WATI puede reintentar webhooks)
+    if (isDuplicateMessage(waId, text)) {
+      console.log('🔄 Mensaje duplicado ignorado');
       return;
     }
 

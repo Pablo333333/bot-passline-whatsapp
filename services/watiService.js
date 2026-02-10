@@ -53,8 +53,10 @@ async function sendSessionMessage(phoneNumber, message) {
     // Construir URL con query parameter
     const url = `/api/v1/sendSessionMessage/${formattedPhone}?messageText=${encodedMessage}`;
 
-    // POST sin body (el texto va en la URL) - SIN LOGS para velocidad
+    // POST sin body (el texto va en la URL) con timer
+    console.time('⏱️ WATI');
     const response = await watiClient.post(url);
+    console.timeEnd('⏱️ WATI');
 
     return {
       success: true,

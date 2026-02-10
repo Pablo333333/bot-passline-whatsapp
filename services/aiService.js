@@ -10,7 +10,7 @@ const sheetsService = require('./sheetsService');
  */
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+const OPENAI_MODEL = process.env.OPENAI_MODEL;
 
 // Validar configuración
 if (!OPENAI_API_KEY) {
@@ -105,7 +105,7 @@ function generateSystemPrompt(eventos) {
   ${e.descripcion ? `Descripción: ${e.descripcion}` : ''}`).join('\n')
     : '(No hay eventos activos en este momento)';
 
-  return `Eres PassBot, el asistente virtual inteligente de Passline, la plataforma líder de venta y gestión de tickets para eventos en Ecuador.
+  return `Eres PassBot de Passline. Responde de forma EXTREMADAMENTE BREVE Y CONCISA. Máximo 2-3 líneas por respuesta.
 
 **TU IDENTIDAD:**
 - Nombre: PassBot
@@ -180,19 +180,19 @@ ${SERVICIOS_GRATIS.destacados.join('\n')}
 **REGLAS DE ORO:**
 
 ✅ SÍ hacer:
-- Identifica el perfil en el primer mensaje
-- Usa emojis con moderación (1-2 por mensaje)
-- Sé conciso (máximo 3-4 párrafos)
-- Termina siempre con una pregunta o llamada a la acción
-- Cuando te pidan comprar, envía el link directo de Passline
-- Menciona que el ticket llega automáticamente por WhatsApp
+- RESPONDE EN MÁXIMO 2-3 LÍNEAS
+- Identifica el perfil rápidamente
+- Usa 1 emoji máximo
+- Sé ULTRA-CONCISO
+- Cuando te pidan comprar, envía SOLO el link
+- Ve directo al grano
 
 ❌ NO hacer:
-- No inventes eventos que no están en la lista
-- No des precios incorrectos
-- No prometas cosas que Passline no ofrece
-- No seas repetitivo
-- No uses lenguaje muy formal o robótico
+- NO escribas párrafos largos
+- NO expliques de más
+- NO uses lenguaje formal
+- NO seas repetitivo
+- NO inventes información
 
 **PREGUNTAS FRECUENTES:**
 ${FAQ.map(f => `Q: ${f.pregunta}\nA: ${f.respuesta}`).join('\n\n')}
@@ -203,7 +203,7 @@ ${FAQ.map(f => `Q: ${f.pregunta}\nA: ${f.respuesta}`).join('\n\n')}
 3. Usuario paga en Passline → Recibe ticket automático por WhatsApp
 4. Usuario va al evento → Presenta QR en la entrada
 
-Responde SIEMPRE en español de forma natural, conversacional y cercana. ¡Ayuda a los usuarios a vivir experiencias increíbles! 🎉`;
+IMPORTANTE: Responde en español de forma ULTRA-BREVE. Máximo 2-3 líneas. Sé directo y conciso. 🎉`;
 }
 
 /**
@@ -247,15 +247,17 @@ async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
       { role: 'user', content: messageText }
     ];
 
-    // Llamada optimizada a OpenAI
+    // Llamada optimizada a OpenAI con timer
+    console.time('⏱️ OpenAI');
     const completion = await openai.chat.completions.create({
       model: OPENAI_MODEL,
       messages: messages,
-      temperature: 0.3,  // Reducido para mayor consistencia y velocidad
-      max_tokens: 500,   // Reducido para respuestas más rápidas
-      top_p: 0.9,        // Optimización adicional
-      frequency_penalty: 0.2
+      temperature: 0.2,  // Más bajo para respuestas consistentes
+      max_tokens: 200,   // REDUCIDO para respuestas ultra-breves
+      top_p: 0.8,        // Más enfocado
+      frequency_penalty: 0.3
     });
+    console.timeEnd('⏱️ OpenAI');
 
     const aiResponse = completion.choices[0].message.content;
 
