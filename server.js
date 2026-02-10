@@ -215,10 +215,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, async () => {
   console.log('═══════════════════════════════════════════');
   console.log(`🤖 Bot Passline iniciado correctamente`);
-  console.log(`🌐 Servidor: http://localhost:${PORT}`);
-  console.log(`📡 Webhook WATI: http://localhost:${PORT}/webhook`);
-  console.log(`💳 Webhook Passline: http://localhost:${PORT}/webhook/passline`);
-  console.log(`⚙️  Entorno: ${process.env.NODE_ENV || 'production'}`);
   console.log('═══════════════════════════════════════════');
   
   // Probar conexión con Google Sheets
