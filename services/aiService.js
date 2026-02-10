@@ -96,7 +96,7 @@ function clearHistory(phoneNumber) {
 /**
  * Generar System Prompt dinámico con eventos actualizados
  */
-function generateSystemPrompt(eventos) {
+function generateSystemPrompt(eventos, userName = null) {
   const eventosTexto = eventos && eventos.length > 0 
     ? eventos.map(e => `
 • ${e.nombre} - ${e.fecha}
@@ -105,7 +105,15 @@ function generateSystemPrompt(eventos) {
   ${e.descripcion ? `Descripción: ${e.descripcion}` : ''}`).join('\n')
     : '(No hay eventos activos en este momento)';
 
+  // Preparar instrucción de saludo personalizado
+  const saludoInstruccion = userName && userName !== 'Usuario' 
+    ? `El nombre del usuario es ${userName}. Úsalo para saludarlo de forma cordial al inicio de la conversación o cuando lo consideres natural, pero mantén siempre la brevedad.`
+    : 'Si no conoces el nombre del usuario, usa un saludo genérico como "¡Hola!" pero mantén siempre la brevedad.';
+
   return `Eres PassBot de Passline. Responde de forma EXTREMADAMENTE BREVE Y CONCISA. Máximo 2-3 líneas por respuesta.
+
+**SALUDO PERSONALIZADO:**
+${saludoInstruccion}
 
 **TU IDENTIDAD:**
 - Nombre: PassBot
@@ -221,8 +229,9 @@ async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
     // Si no hay OpenAI configurado, usar respuesta básica
     if (!openai) {
       console.warn('⚠️ OpenAI no configurado');
+      const saludo = userName && userName !== 'Usuario' ? `¡Hola ${userName}!` : '¡Hola!';
       return {
-        response: `¡Hola ${userName}! 👋 ¿En qué puedo ayudarte?\n\n🎟️ Buscar eventos\n🎪 Crear eventos`,
+        response: `${saludo} 👋 ¿En qué puedo ayudarte?\n\n🎟️ Buscar eventos\n🎪 Crear eventos`,
         userProfile: 'unknown',
         usingAI: false
       };
@@ -237,8 +246,8 @@ async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
     // Detectar perfil rápido
     const userProfile = detectUserProfile(messageText, history);
 
-    // System prompt optimizado
-    const systemPrompt = generateSystemPrompt(eventosActivos);
+    // System prompt optimizado con nombre del usuario
+    const systemPrompt = generateSystemPrompt(eventosActivos, userName);
 
     // Mensajes para OpenAI (flujo directo)
     const messages = [
@@ -277,8 +286,9 @@ async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
   } catch (error) {
     console.error('❌ Error IA:', error.message);
     
+    const saludo = userName && userName !== 'Usuario' ? `Hola ${userName}` : 'Hola';
     return {
-      response: `Hola ${userName} 👋\n\n¿En qué puedo ayudarte?\n\n🎟️ Eventos disponibles\n🎪 Crear tu evento`,
+      response: `${saludo} 👋\n\n¿En qué puedo ayudarte?\n\n🎟️ Eventos disponibles\n🎪 Crear tu evento`,
       userProfile: 'unknown',
       error: error.message,
       usingAI: false
