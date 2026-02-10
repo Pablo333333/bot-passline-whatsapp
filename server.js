@@ -18,8 +18,6 @@ const PORT = process.env.PORT;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Servir archivos estáticos (chat web de prueba)
-app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -45,43 +43,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-/**
- * GET /chat
- * Interfaz web de chat para probar el bot sin WATI (temporal)
- */
-app.get('/chat', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'chat.html'));
-});
 
-/**
- * POST /api/chat
- * API endpoint para el chat web (temporal - sin WATI)
- */
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { text, userName, phoneNumber } = req.body;
-
-    if (!text) {
-      return res.status(400).json({ error: 'No text provided' });
-    }
-
-    console.log(`💬 [Web Chat] ${userName} (${phoneNumber}): "${text}"`);
-
-    const aiResponse = await aiService.processMessage(text, phoneNumber || 'web-user', userName || 'Usuario');
-
-    console.log(`🤖 [Web Chat] Respuesta (${aiResponse.userProfile}): ${aiResponse.response.substring(0, 100)}...`);
-
-    res.json({
-      response: aiResponse.response,
-      userProfile: aiResponse.userProfile,
-      usingAI: aiResponse.usingAI
-    });
-
-  } catch (error) {
-    console.error('❌ [Web Chat] Error:', error.message);
-    res.json({ response: '😅 Disculpa, tuve un problema. ¿Podrías intentarlo de nuevo?' });
-  }
-});
 
 /**
  * POST /webhook
@@ -256,7 +218,6 @@ app.listen(PORT, async () => {
   console.log(`🌐 Servidor: http://localhost:${PORT}`);
   console.log(`📡 Webhook WATI: http://localhost:${PORT}/webhook`);
   console.log(`💳 Webhook Passline: http://localhost:${PORT}/webhook/passline`);
-  console.log(`💬 Chat Web: http://localhost:${PORT}/chat`);
   console.log(`⚙️  Entorno: ${process.env.NODE_ENV || 'production'}`);
   console.log('═══════════════════════════════════════════');
   
