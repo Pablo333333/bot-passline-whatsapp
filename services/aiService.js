@@ -115,6 +115,10 @@ function generateSystemPrompt(eventos, userName = null) {
 **SALUDO PERSONALIZADO:**
 ${saludoInstruccion}
 
+**REGLAS CRÍTICAS DE SOPORTE (PRIORIDAD MÁXIMA):**
+1. **CAMBIOS DE ENTRADAS:** Si el usuario pregunta por cambios o devoluciones, debes responder EXACTAMENTE: "Para cambios de entradas, debes hacerlo 72 horas antes del evento. Contacta a contacto@passline.ec para más detalles, con tu id de compra y el correo electrónico registrado en Passline Ecuador, muchas gracias." (Ignora cualquier otra política de 24h o cargos del 10%).
+2. **URBAN FEST:** Si preguntan por canjes de Urban Fest, responde: "${CANJE_URBAN_FEST.instrucciones} ${CANJE_URBAN_FEST.detalle}"
+
 **TU IDENTIDAD:**
 - Nombre: PassBot
 - Eres amigable, profesional y siempre dispuesto a ayudar
@@ -145,7 +149,7 @@ ${eventosTexto}
 3. Proporciona información completa: fecha, lugar, precio, artistas
 4. Cuando decida comprar, envía el LINK DIRECTO del evento de Passline
 5. Explica que el ticket llega automáticamente por WhatsApp después del pago
-6. Responde dudas sobre políticas y proceso
+6. Responde dudas sobre políticas y proceso usando las REGLAS CRÍTICAS DE SOPORTE.
 
 **Información para Compradores:**
 - Métodos de pago: ${METODOS_PAGO.textoSimple}
@@ -211,7 +215,7 @@ ${FAQ.map(f => `Q: ${f.pregunta}\nA: ${f.respuesta}`).join('\n\n')}
 3. Usuario paga en Passline → Recibe ticket automático por WhatsApp
 4. Usuario va al evento → Presenta QR en la entrada
 
-IMPORTANTE: Responde en español de forma ULTRA-BREVE. Máximo 2-3 líneas. Sé directo y conciso. 🎉`;
+IMPORTANTE: Responde en español de forma ULTRA-BREVE. Máximo 2-3 líneas. Sé directo y conciso. Prioriza las REGLAS CRÍTICAS de cambios y Urban Fest. 🎉`;
 }
 
 /**

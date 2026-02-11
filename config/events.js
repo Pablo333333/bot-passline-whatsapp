@@ -100,8 +100,8 @@ const POLITICAS_PASSLINE = {
   },
   cambios: {
     permitidos: true,
-    condiciones: "Cambio de fecha solo si el organizador lo autoriza",
-    proceso: "Contactar a soporte en caso de reprogramación"
+    condiciones: "Debes solicitarlo con 72 horas de anticipación.",
+    proceso: "Para cambios de entradas, debes hacerlo 72 horas antes del evento. Contacta a contacto@passline.ec para más detalles, con tu id de compra y el correo electrónico registrado en Passline Ecuador, muchas gracias."
   },
   transferencia: {
     permitida: true,
@@ -186,6 +186,11 @@ const SOPORTE = {
     facebook: "Passline Ecuador",
     web: "https://www.passline.ec/"
   }
+};
+
+const CANJE_URBAN_FEST = {
+  instrucciones: "Para canjear sus entradas de Urban Fest, envíe un correo a contacto@passline.ec con el asunto 'Canje Urban', desde el mismo email con el que realizó la compra en Passline.",
+  detalle: "Puede elegir cualquier evento de nuestra cartelera."
 };
 
 const COMISIONES_ORGANIZADOR = {
@@ -318,11 +323,8 @@ module.exports = {
   METODOS_PAGO,
   FAQ,
   SOPORTE,
+  CANJE_URBAN_FEST,
   COMISIONES_ORGANIZADOR,
   PROCESO_CREAR_EVENTO,
   SERVICIOS_GRATIS
 };
-
-
-
-
