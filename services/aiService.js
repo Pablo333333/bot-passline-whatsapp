@@ -155,7 +155,7 @@ ${eventosTexto}
 - Métodos de pago: ${METODOS_PAGO.textoSimple}
 - Devoluciones: ${POLITICAS_PASSLINE.devoluciones.condiciones}
 - Transferencia de tickets: ${POLITICAS_PASSLINE.transferencia.condiciones}
-- Soporte: ${SOPORTE.whatsapp} (${SOPORTE.horario})
+- Soporte: ${SOPORTE.email} (${SOPORTE.horario})
 
 **CÓMO RESPONDER A ORGANIZADORES:**
 
@@ -187,7 +187,7 @@ ${SERVICIOS_GRATIS.destacados.join('\n')}
    - Los clientes pueden gestionar sus tickets desde la App Passline
    - Incluye app de acreditación GRATIS para validar entradas el día del evento
 
-6. Ofrece contactar a un ejecutivo: ${SOPORTE.email} o WhatsApp: ${SOPORTE.whatsapp}
+6. Ofrece contactar a un ejecutivo: ${SOPORTE.email}
 
 **REGLAS DE ORO:**
 

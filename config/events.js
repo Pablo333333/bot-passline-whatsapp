@@ -178,7 +178,6 @@ const FAQ = [
 
 const SOPORTE = {
   email: "contacto@passline.ec",
-  whatsapp: "+593 98 382 31 70",
   horario: "24/7 - Sistema de ventas activo las 24 horas",
   tiempoRespuesta: "Atención personalizada de calidad",
   redesSociales: {
@@ -259,7 +258,7 @@ const PROCESO_CREAR_EVENTO = {
     "No necesitas conocimientos técnicos",
     "Soporte disponible 24/7"
   ],
-  contactoAyuda: "Si necesitas ayuda para crear tu evento, contacta: contacto@passline.ec o WhatsApp: +593 98 382 31 70"
+  contactoAyuda: "Si necesitas ayuda para crear tu evento, contacta: contacto@passline.ec"
 };
 
 const SERVICIOS_GRATIS = {
