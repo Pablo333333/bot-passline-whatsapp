@@ -1,5 +1,5 @@
 const OpenAI = require('openai');
-const { POLITICAS_PASSLINE, METODOS_PAGO, FAQ, SOPORTE, COMISIONES_ORGANIZADOR, PROCESO_CREAR_EVENTO, SERVICIOS_GRATIS } = require('../config/events');
+const { POLITICAS_PASSLINE, METODOS_PAGO, FAQ, SOPORTE, CANJE_URBAN_FEST, COMISIONES_ORGANIZADOR, PROCESO_CREAR_EVENTO, SERVICIOS_GRATIS } = require('../config/events');
 const sheetsService = require('./sheetsService');
 
 /**
