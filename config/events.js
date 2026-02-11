@@ -95,8 +95,8 @@ const EVENTOS_ACTIVOS = [
 const POLITICAS_PASSLINE = {
   devoluciones: {
     permitidas: true,
-    condiciones: "Hasta 24 horas antes del evento, con cargo del 10% por gestión administrativa",
-    proceso: "Solicitar a través de soporte@passline.ec con número de orden"
+    condiciones: "Hasta 72 horas antes del evento, con cargo del 10% por gestión administrativa",
+    proceso: "Solicitar a través de contacto@passline.ec con tu ID de compra y el correo electrónico registrado en Passline Ecuador"
   },
   cambios: {
     permitidos: true,
@@ -116,6 +116,13 @@ const POLITICAS_PASSLINE = {
     validacion: "QR code único por ticket",
     reingreso: "No permitido salvo autorización del organizador",
     anticipacion: "Llegar 30 minutos antes para validación"
+  },
+  canjeEspecial: {
+    urbanFest: {
+      permitido: true,
+      proceso: "Para canjear sus entradas de Urban Fest, envíe un correo a contacto@passline.ec con el asunto 'Canje Urban', desde el mismo email con el que realizó la compra en Passline",
+      opciones: "Puede elegir cualquier evento de nuestra cartelera"
+    }
   }
 };
 
@@ -149,7 +156,7 @@ const FAQ = [
   },
   {
     pregunta: "¿Qué pasa si pierdo mi ticket?",
-    respuesta: "No te preocupes, puedes recuperarlo ingresando a tu cuenta en passline.ec o contactando a soporte@passline.ec con tu número de orden"
+    respuesta: "No te preocupes, puedes recuperarlo ingresando a tu cuenta en passline.ec o contactando a contacto@passline.ec con tu ID de compra y el correo electrónico registrado en Passline Ecuador"
   },
   {
     pregunta: "¿Puedo comprar tickets para varias personas?",
@@ -162,6 +169,10 @@ const FAQ = [
   {
     pregunta: "¿Qué hago si el evento se cancela?",
     respuesta: "Recibirás un reembolso automático del 100% del valor pagado en un plazo de 5-7 días hábiles"
+  },
+  {
+    pregunta: "¿Cómo puedo canjear mis entradas de Urban Fest?",
+    respuesta: "Para canjear sus entradas de Urban Fest, envíe un correo a contacto@passline.ec con el asunto 'Canje Urban', desde el mismo email con el que realizó la compra en Passline. Puede elegir cualquier evento de nuestra cartelera."
   }
 ];
 
