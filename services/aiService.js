@@ -1,10 +1,11 @@
 const OpenAI = require('openai');
-const { POLITICAS_PASSLINE, METODOS_PAGO, FAQ, SOPORTE, CANJE_URBAN_FEST, COMISIONES_ORGANIZADOR, PROCESO_CREAR_EVENTO, SERVICIOS_GRATIS } = require('../config/events');
 const sheetsService = require('./sheetsService');
 
 /**
- * Servicio de IA optimizado para respuestas rápidas
+ * Servicio de IA 100% dinámico
+ * - Conocimiento del bot cargado desde Google Sheets (pestaña Configuraciones)
  * - Caché de eventos (10 minutos)
+ * - Caché de conocimiento (10 minutos)
  * - Parámetros OpenAI optimizados
  * - Flujo directo simplificado
  */
@@ -30,6 +31,13 @@ let eventsCache = {
   data: [],
   lastUpdate: 0,
   CACHE_DURATION: 10 * 60 * 1000 // 10 minutos en millisegundos
+};
+
+// Caché global para conocimiento del bot (actualización cada 10 minutos)
+let knowledgeCache = {
+  data: null,
+  lastUpdate: 0,
+  CACHE_DURATION: 10 * 60 * 1000
 };
 
 // Almacenamiento temporal de conversaciones
@@ -59,15 +67,39 @@ async function getCachedEvents() {
   
   // Actualizar caché solo cuando sea necesario
   try {
-    console.log('🔄 Actualizando caché...');
+    console.log('🔄 Actualizando caché de eventos...');
     const eventos = await sheetsService.getEvents();
     eventsCache.data = eventos;
     eventsCache.lastUpdate = now;
     console.log(`✅ Caché: ${eventos.length} eventos`);
     return eventos;
   } catch (error) {
-    console.warn('⚠️ Error caché:', error.message);
+    console.warn('⚠️ Error caché eventos:', error.message);
     return eventsCache.data; // Usar caché anterior
+  }
+}
+
+/**
+ * Obtener conocimiento del bot desde caché o Google Sheets
+ */
+async function getCachedKnowledge() {
+  const now = Date.now();
+  const cacheAge = now - knowledgeCache.lastUpdate;
+
+  if (knowledgeCache.data && cacheAge < knowledgeCache.CACHE_DURATION) {
+    return knowledgeCache.data;
+  }
+
+  try {
+    console.log('🔄 Actualizando caché de conocimiento...');
+    const cerebro = await sheetsService.getBotKnowledge();
+    knowledgeCache.data = cerebro;
+    knowledgeCache.lastUpdate = now;
+    console.log('✅ Caché de conocimiento actualizado');
+    return cerebro;
+  } catch (error) {
+    console.warn('⚠️ Error caché conocimiento:', error.message);
+    return knowledgeCache.data || {}; // Usar caché anterior o vacío
   }
 }
 
@@ -94,9 +126,24 @@ function clearHistory(phoneNumber) {
 }
 
 /**
- * Generar System Prompt dinámico con eventos actualizados
+ * Helper: obtener contenido seguro del objeto cerebro.
+ * Devuelve fallback si la ruta no existe.
  */
-function generateSystemPrompt(eventos, userName = null) {
+function safe(obj, path, fallback = '') {
+  const keys = path.split('.');
+  let current = obj;
+  for (const key of keys) {
+    if (current == null || typeof current !== 'object') return fallback;
+    current = current[key];
+  }
+  return (current != null && current !== '') ? current : fallback;
+}
+
+/**
+ * Generar System Prompt 100% dinámico usando el objeto cerebro de Sheets
+ */
+function generateSystemPrompt(eventos, cerebro, userName = null) {
+  // ── Eventos activos ──
   const eventosTexto = eventos && eventos.length > 0 
     ? eventos.map(e => `
 • ${e.nombre} - ${e.fecha}
@@ -105,10 +152,46 @@ function generateSystemPrompt(eventos, userName = null) {
   ${e.descripcion ? `Descripción: ${e.descripcion}` : ''}`).join('\n')
     : '(No hay eventos activos en este momento)';
 
-  // Preparar instrucción de saludo personalizado
+  // ── Saludo personalizado ──
   const saludoInstruccion = userName && userName !== 'Usuario' 
     ? `El nombre del usuario es ${userName}. Úsalo para saludarlo de forma cordial al inicio de la conversación o cuando lo consideres natural, pero mantén siempre la brevedad.`
     : 'Si no conoces el nombre del usuario, usa un saludo genérico como "¡Hola!" pero mantén siempre la brevedad.';
+
+  // ── Bienvenidas dinámicas ──
+  const bienvenidaComprador = safe(cerebro, 'BIENVENIDA.comprador', '¡Hola! Bienvenido a Passline. ¿En qué puedo ayudarte hoy?');
+  const bienvenidaOrganizador = safe(cerebro, 'BIENVENIDA.organizador', '¡Hola! Bienvenido a Passline. ¿Quieres crear tu evento?');
+
+  // ── Políticas dinámicas ──
+  const politicaDevoluciones = safe(cerebro, 'POLITICA.devoluciones', 'Consulta las políticas en contacto@passline.ec');
+  const politicaCambios = safe(cerebro, 'POLITICA.cambios', 'Para cambios, contacta a contacto@passline.ec');
+  const politicaTransferencia = safe(cerebro, 'POLITICA.transferencia', 'Puedes transferir tu ticket desde la app o web de Passline');
+  const politicaMenores = safe(cerebro, 'POLITICA.menores', 'Depende del evento. Consulta la descripción del evento.');
+
+  // ── Organizadores y crear evento ──
+  const organizadorInfo = cerebro.ORGANIZADOR || {};
+  const organizadorTexto = Object.entries(organizadorInfo)
+    .map(([clave, contenido]) => `- ${clave}: ${contenido}`)
+    .join('\n');
+
+  const crearEventoInfo = cerebro.CREAR_EVENTO || {};
+  const crearEventoTexto = Object.entries(crearEventoInfo)
+    .map(([clave, contenido]) => `- ${clave}: ${contenido}`)
+    .join('\n');
+
+  // ── Pagos ──
+  const metodosPago = safe(cerebro, 'PAGOS.metodos', 'Tarjetas de crédito/débito, PayPal, transferencia bancaria.');
+
+  // ── FAQ dinámico ──
+  const faqInfo = cerebro.FAQ || {};
+  const faqTexto = Object.entries(faqInfo)
+    .map(([pregunta, respuesta]) => `Q: ${pregunta}\nA: ${respuesta}`)
+    .join('\n\n');
+
+  // ── Urban Fest ──
+  const urbanFestCanje = safe(cerebro, 'URBAN_FEST.canje', '');
+  const urbanFestBloque = urbanFestCanje
+    ? `2. **URBAN FEST:** Si preguntan por canjes de Urban Fest, responde: "${urbanFestCanje}"`
+    : '';
 
   return `Eres PassBot de Passline. Responde de forma EXTREMADAMENTE BREVE Y CONCISA. Máximo 2-3 líneas por respuesta.
 
@@ -116,8 +199,8 @@ function generateSystemPrompt(eventos, userName = null) {
 ${saludoInstruccion}
 
 **REGLAS CRÍTICAS DE SOPORTE (PRIORIDAD MÁXIMA):**
-1. **CAMBIOS DE ENTRADAS:** Si el usuario pregunta por cambios o devoluciones, debes responder EXACTAMENTE: "Para cambios de entradas, debes hacerlo 72 horas antes del evento. Contacta a contacto@passline.ec para más detalles, con tu id de compra y el correo electrónico registrado en Passline Ecuador, muchas gracias." (Ignora cualquier otra política de 24h o cargos del 10%).
-2. **URBAN FEST:** Si preguntan por canjes de Urban Fest, responde: "${CANJE_URBAN_FEST.instrucciones} ${CANJE_URBAN_FEST.detalle}"
+1. **CAMBIOS DE ENTRADAS:** ${politicaCambios}
+${urbanFestBloque}
 
 **TU IDENTIDAD:**
 - Nombre: PassBot
@@ -131,12 +214,14 @@ ${eventosTexto}
 **PERFILES DE USUARIOS:**
 
 🎟️ **COMPRADOR** - Busca eventos para asistir:
+- Bienvenida: ${bienvenidaComprador}
 - Pregunta por eventos, fechas, precios, ubicaciones
 - Quiere comprar tickets
 - Necesita ayuda con el proceso de compra
 - Consulta políticas de devolución/cambios
 
 🎪 **ORGANIZADOR** - Quiere crear eventos:
+- Bienvenida: ${bienvenidaOrganizador}
 - Pregunta cómo crear y publicar eventos
 - Consulta comisiones y pagos
 - Busca herramientas de gestión
@@ -152,42 +237,18 @@ ${eventosTexto}
 6. Responde dudas sobre políticas y proceso usando las REGLAS CRÍTICAS DE SOPORTE.
 
 **Información para Compradores:**
-- Métodos de pago: ${METODOS_PAGO.textoSimple}
-- Devoluciones: ${POLITICAS_PASSLINE.devoluciones.condiciones}
-- Transferencia de tickets: ${POLITICAS_PASSLINE.transferencia.condiciones}
-- Soporte: ${SOPORTE.email} (${SOPORTE.horario})
+- Métodos de pago: ${metodosPago}
+- Devoluciones: ${politicaDevoluciones}
+- Transferencia de tickets: ${politicaTransferencia}
+- Menores de edad: ${politicaMenores}
 
 **CÓMO RESPONDER A ORGANIZADORES:**
 
-1. Muéstrate profesional y entusiasta
+${organizadorTexto || '- Muéstrate profesional y entusiasta sobre los beneficios de Passline.'}
 
-2. **DESTACA SIEMPRE LOS SERVICIOS GRATUITOS:**
-${SERVICIOS_GRATIS.destacados.join('\n')}
+**CÓMO CREAR UN EVENTO:**
 
-3. Explica los beneficios de Passline:
-   - Comisión: ${COMISIONES_ORGANIZADOR.comision} (${COMISIONES_ORGANIZADOR.sinCostosOcultos})
-   - Capacitación: ${COMISIONES_ORGANIZADOR.capacitacion}
-   - Venta RRPP: ${COMISIONES_ORGANIZADOR.ventaRRPP}
-   - Envío de tickets GRATIS por WhatsApp, SMS y email
-   - App de acreditación GRATIS con capacitación incluida
-   - Dashboard completo con estadísticas en tiempo real
-   - Control de acceso con QR
-   - Sistema anti-fraude
-   - Promoción en redes sociales
-   - Plataforma AUTOGESTIONABLE 24/7
-
-4. Si preguntan CÓMO CREAR SU EVENTO:
-   - Explica que es fácil y rápido: "${PROCESO_CREAR_EVENTO.descripcion}"
-   - Resume los pasos principales: ingresar a www.passline.ec → Crear Evento → Completar datos → Configurar tickets → Enviar para aprobación
-   - Menciona que un ejecutivo revisa y aprueba el evento
-   - Destaca: "Crear tu evento es 100% GRATIS y autoadministrable"
-
-5. Si preguntan por la app o tickets digitales:
-   - Los tickets se envían GRATIS por WhatsApp, SMS y email automáticamente
-   - Los clientes pueden gestionar sus tickets desde la App Passline
-   - Incluye app de acreditación GRATIS para validar entradas el día del evento
-
-6. Ofrece contactar a un ejecutivo: ${SOPORTE.email}
+${crearEventoTexto || '- Ingresa a www.passline.ec → Crear Evento → Completar datos → Configurar tickets → Enviar para aprobación.'}
 
 **REGLAS DE ORO:**
 
@@ -207,7 +268,7 @@ ${SERVICIOS_GRATIS.destacados.join('\n')}
 - NO inventes información
 
 **PREGUNTAS FRECUENTES:**
-${FAQ.map(f => `Q: ${f.pregunta}\nA: ${f.respuesta}`).join('\n\n')}
+${faqTexto || '(No hay preguntas frecuentes cargadas)'}
 
 **PROCESO DE COMPRA:**
 1. Usuario consulta evento → Le das info completa
@@ -215,7 +276,7 @@ ${FAQ.map(f => `Q: ${f.pregunta}\nA: ${f.respuesta}`).join('\n\n')}
 3. Usuario paga en Passline → Recibe ticket automático por WhatsApp
 4. Usuario va al evento → Presenta QR en la entrada
 
-IMPORTANTE: Responde en español de forma ULTRA-BREVE. Máximo 2-3 líneas. Sé directo y conciso. Prioriza las REGLAS CRÍTICAS de cambios y Urban Fest. 🎉`;
+IMPORTANTE: Responde en español de forma ULTRA-BREVE. Máximo 2-3 líneas. Sé directo y conciso. 🎉`;
 }
 
 /**
@@ -229,6 +290,9 @@ IMPORTANTE: Responde en español de forma ULTRA-BREVE. Máximo 2-3 líneas. Sé 
 async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
   try {
     console.log(`🤖 Procesando: "${messageText.substring(0, 50)}..."`);
+
+    // Cargar conocimiento dinámico desde Google Sheets
+    const cerebro = await getCachedKnowledge();
 
     // Si no hay OpenAI configurado, usar respuesta básica
     if (!openai) {
@@ -250,8 +314,8 @@ async function processMessage(messageText, phoneNumber, userName = 'Usuario') {
     // Detectar perfil rápido
     const userProfile = detectUserProfile(messageText, history);
 
-    // System prompt optimizado con nombre del usuario
-    const systemPrompt = generateSystemPrompt(eventosActivos, userName);
+    // System prompt dinámico con cerebro y nombre del usuario
+    const systemPrompt = generateSystemPrompt(eventosActivos, cerebro, userName);
 
     // Mensajes para OpenAI (flujo directo)
     const messages = [
@@ -363,4 +427,3 @@ module.exports = {
   getConversationHistory,
   getCachedEvents
 };
-

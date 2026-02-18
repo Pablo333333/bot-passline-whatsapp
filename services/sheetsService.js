@@ -144,6 +144,47 @@ async function saveSale(data) {
 }
 
 /**
+ * Obtener base de conocimientos del bot desde la pestaña 'Configuraciones'
+ * Columnas esperadas: Seccion, Clave, Contenido
+ * Retorna un objeto anidado: { SECCION: { clave: contenido, ... }, ... }
+ *
+ * @returns {Promise<Object>} Objeto cerebro con toda la configuración
+ */
+async function getBotKnowledge() {
+  try {
+    const doc = await getSheetConnection();
+    const sheet = doc.sheetsByTitle['Configuraciones'];
+
+    if (!sheet) {
+      throw new Error('No se encontró la pestaña "Configuraciones"');
+    }
+
+    const rows = await sheet.getRows();
+    const cerebro = {};
+
+    for (const row of rows) {
+      const seccion = (row.get('Seccion') || '').trim();
+      const clave = (row.get('Clave') || '').trim();
+      const contenido = (row.get('Contenido') || '').trim();
+
+      if (!seccion || !clave) continue; // Saltar filas vacías
+
+      if (!cerebro[seccion]) {
+        cerebro[seccion] = {};
+      }
+      cerebro[seccion][clave] = contenido;
+    }
+
+    console.log(`🧠 Cerebro cargado: ${Object.keys(cerebro).length} secciones`);
+    return cerebro;
+
+  } catch (error) {
+    console.error('❌ Error cargando conocimiento:', error.message);
+    return {}; // Devolver objeto vacío como fallback
+  }
+}
+
+/**
  * Probar conexión con Google Sheets
  */
 async function testConnection() {
@@ -169,6 +210,7 @@ async function testConnection() {
 module.exports = {
   getEvents,
   saveSale,
+  getBotKnowledge,
   testConnection
 };
 

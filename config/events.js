@@ -95,13 +95,13 @@ const EVENTOS_ACTIVOS = [
 const POLITICAS_PASSLINE = {
   devoluciones: {
     permitidas: true,
-    condiciones: "Hasta 72 horas antes del evento, con cargo del 10% por gestión administrativa",
-    proceso: "Solicitar a través de contacto@passline.ec con tu ID de compra y el correo electrónico registrado en Passline Ecuador"
+    condiciones: "Hasta 24 horas antes del evento, con cargo del 10% por gestión administrativa",
+    proceso: "Solicitar a través de soporte@passline.ec con número de orden"
   },
   cambios: {
     permitidos: true,
-    condiciones: "Debes solicitarlo con 72 horas de anticipación.",
-    proceso: "Para cambios de entradas, debes hacerlo 72 horas antes del evento. Contacta a contacto@passline.ec para más detalles, con tu id de compra y el correo electrónico registrado en Passline Ecuador, muchas gracias."
+    condiciones: "Cambio de fecha solo si el organizador lo autoriza",
+    proceso: "Contactar a soporte en caso de reprogramación"
   },
   transferencia: {
     permitida: true,
@@ -116,13 +116,6 @@ const POLITICAS_PASSLINE = {
     validacion: "QR code único por ticket",
     reingreso: "No permitido salvo autorización del organizador",
     anticipacion: "Llegar 30 minutos antes para validación"
-  },
-  canjeEspecial: {
-    urbanFest: {
-      permitido: true,
-      proceso: "Para canjear sus entradas de Urban Fest, envíe un correo a contacto@passline.ec con el asunto 'Canje Urban', desde el mismo email con el que realizó la compra en Passline",
-      opciones: "Puede elegir cualquier evento de nuestra cartelera"
-    }
   }
 };
 
@@ -156,7 +149,7 @@ const FAQ = [
   },
   {
     pregunta: "¿Qué pasa si pierdo mi ticket?",
-    respuesta: "No te preocupes, puedes recuperarlo ingresando a tu cuenta en passline.ec o contactando a contacto@passline.ec con tu ID de compra y el correo electrónico registrado en Passline Ecuador"
+    respuesta: "No te preocupes, puedes recuperarlo ingresando a tu cuenta en passline.ec o contactando a soporte@passline.ec con tu número de orden"
   },
   {
     pregunta: "¿Puedo comprar tickets para varias personas?",
@@ -169,15 +162,12 @@ const FAQ = [
   {
     pregunta: "¿Qué hago si el evento se cancela?",
     respuesta: "Recibirás un reembolso automático del 100% del valor pagado en un plazo de 5-7 días hábiles"
-  },
-  {
-    pregunta: "¿Cómo puedo canjear mis entradas de Urban Fest?",
-    respuesta: "Para canjear sus entradas de Urban Fest, envíe un correo a contacto@passline.ec con el asunto 'Canje Urban', desde el mismo email con el que realizó la compra en Passline. Puede elegir cualquier evento de nuestra cartelera."
   }
 ];
 
 const SOPORTE = {
   email: "contacto@passline.ec",
+  whatsapp: "+593 98 382 31 70",
   horario: "24/7 - Sistema de ventas activo las 24 horas",
   tiempoRespuesta: "Atención personalizada de calidad",
   redesSociales: {
@@ -185,11 +175,6 @@ const SOPORTE = {
     facebook: "Passline Ecuador",
     web: "https://www.passline.ec/"
   }
-};
-
-const CANJE_URBAN_FEST = {
-  instrucciones: "Para canjear sus entradas de Urban Fest, envíe un correo a contacto@passline.ec con el asunto 'Canje Urban', desde el mismo email con el que realizó la compra en Passline.",
-  detalle: "Puede elegir cualquier evento de nuestra cartelera."
 };
 
 const COMISIONES_ORGANIZADOR = {
@@ -258,7 +243,7 @@ const PROCESO_CREAR_EVENTO = {
     "No necesitas conocimientos técnicos",
     "Soporte disponible 24/7"
   ],
-  contactoAyuda: "Si necesitas ayuda para crear tu evento, contacta: contacto@passline.ec"
+  contactoAyuda: "Si necesitas ayuda para crear tu evento, contacta: contacto@passline.ec o WhatsApp: +593 98 382 31 70"
 };
 
 const SERVICIOS_GRATIS = {
@@ -322,8 +307,11 @@ module.exports = {
   METODOS_PAGO,
   FAQ,
   SOPORTE,
-  CANJE_URBAN_FEST,
   COMISIONES_ORGANIZADOR,
   PROCESO_CREAR_EVENTO,
   SERVICIOS_GRATIS
 };
+
+
+
+

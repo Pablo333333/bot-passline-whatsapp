@@ -157,7 +157,3 @@ module.exports = {
   DETECTION_PATTERNS,
   URLS
 };
-
-
-
-
