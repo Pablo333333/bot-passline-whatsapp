@@ -8,6 +8,7 @@ dotenv.config();
 
 // Ahora sí importar los servicios (después de cargar .env)
 const watiService = require('./services/watiService');
+const twilioService = require('./services/twilioService');
 const aiService = require('./services/aiService');
 const sheetsService = require('./services/sheetsService');
 
@@ -122,6 +123,7 @@ app.post('/webhook/passline', async (req, res) => {
       orderId,
       customerPhone,
       customerName,
+      customerEmail,
       eventName,
       ticketUrl,
       amount,
@@ -138,7 +140,7 @@ app.post('/webhook/passline', async (req, res) => {
     res.status(200).json({ status: 'received' });
 
     // Enviar ticket al cliente
-    await sendTicketToCustomer(customerPhone, customerName, eventName, ticketUrl, orderId);
+    await sendTicketToCustomer(customerPhone, customerName, customerEmail, eventName, ticketUrl, orderId);
 
     // Registrar venta en Google Sheets
     try {
@@ -192,39 +194,39 @@ async function processUserMessage(phoneNumber, messageText, userName) {
 
 /**
  * Enviar ticket al cliente después de un pago exitoso
+ * Usa Twilio para envío proactivo con plantilla de WhatsApp
  */
-async function sendTicketToCustomer(phoneNumber, customerName, eventName, ticketUrl, orderId) {
+async function sendTicketToCustomer(phoneNumber, customerName, customerEmail, eventName, ticketUrl, orderId) {
   try {
-    console.log(`🎟️ Enviando ticket a ${customerName} (${phoneNumber}) para evento: ${eventName}`);
+    console.log(`🎟️ Enviando ticket vía Twilio a ${customerName} de email ${customerEmail} (${phoneNumber}) para evento: ${eventName}`);
 
     // Formatear número de teléfono (remover caracteres especiales)
     const formattedPhone = phoneNumber.replace(/[^\d]/g, '');
 
-    // Crear mensaje personalizado
-    const message = `🎉 ¡Hola ${customerName}!
+    // Variables para la plantilla de Twilio
+    // Ajustar los keys según tu plantilla configurada en Twilio
+    const contentVariables = {
+      '1': ticketUrl
+    };
 
-¡Tu compra ha sido confirmada! ✅
+    // Enviar usando plantilla de Twilio (TWILIO_TICKET_CONTENT_SID debe estar en .env)
+    const contentSid = process.env.TWILIO_TICKET_CONTENT_SID;
 
-📌 *Evento:* ${eventName}
-🎫 *Orden:* #${orderId}
+    if (contentSid) {
+      // Enviar con plantilla aprobada (recomendado para mensajes proactivos)
+      await twilioService.sendTemplateMessage(formattedPhone, contentSid, contentVariables);
+    } else {
+      // Fallback: enviar como mensaje de texto libre (solo funciona si hay sesión activa)
+      const message = `🎉 ¡Hola ${customerName}!\n\n¡Tu compra ha sido confirmada! ✅\n\n📌 *Evento:* ${eventName}\n🎫 *Orden:* #${orderId}\n\nAquí está tu ticket:\n${ticketUrl}\n\n*Importante:*\n• Presenta este ticket en la entrada del evento\n• Guarda este mensaje para acceder fácilmente\n• Si tienes dudas, escríbenos aquí mismo\n\n¡Nos vemos en el evento! 🎊`;
 
-Aquí está tu ticket:
-${ticketUrl}
+      console.warn('⚠️ TWILIO_TICKET_CONTENT_SID no configurado, enviando como mensaje libre');
+      await twilioService.sendMessage(formattedPhone, message);
+    }
 
-*Importante:*
-• Presenta este ticket en la entrada del evento
-• Guarda este mensaje para acceder fácilmente
-• Si tienes dudas, escríbenos aquí mismo
-
-¡Nos vemos en el evento! 🎊`;
-
-    // Enviar mensaje con el ticket
-    await watiService.sendSessionMessage(formattedPhone, message);
-
-    console.log(`✅ Ticket enviado exitosamente a ${phoneNumber}`);
+    console.log(`✅ Ticket enviado exitosamente vía Twilio a ${phoneNumber}`);
 
   } catch (error) {
-    console.error('❌ Error enviando ticket:', error.message);
+    console.error('❌ Error enviando ticket vía Twilio:', error.message || error.error);
     throw error;
   }
 }
