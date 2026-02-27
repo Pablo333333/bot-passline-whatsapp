@@ -136,31 +136,41 @@ app.post('/webhook/passline', async (req, res) => {
       return res.status(200).json({ status: 'payment_not_completed' });
     }
 
-    // Responder al webhook
+    // Responder INMEDIATAMENTE al webhook (evitar doble respuesta)
     res.status(200).json({ status: 'received' });
 
-    // Enviar ticket al cliente
-    await sendTicketToCustomer(customerPhone, customerName, customerEmail, eventName, ticketUrl, orderId);
+    // Procesar envío de ticket y registro de forma asíncrona
+    setImmediate(async () => {
+      try {
+        // Enviar ticket al cliente
+        await sendTicketToCustomer(customerPhone, customerName, customerEmail, eventName, ticketUrl, orderId);
 
-    // Registrar venta en Google Sheets
-    try {
-      await sheetsService.saveSale({
-        nombre: customerName,
-        telefono: customerPhone,
-        mail: req.body.customerEmail || '',
-        eventoComprado: eventName,
-        montoPagado: amount || 0,
-        idTransaccion: orderId
-      });
-      console.log('📊 Venta registrada en Google Sheets');
-    } catch (sheetError) {
-      console.error('⚠️ No se pudo registrar en Google Sheets:', sheetError.message);
-      // No falla el webhook si Sheets falla
-    }
+        // Registrar venta en Google Sheets
+        try {
+          await sheetsService.saveSale({
+            nombre: customerName,
+            telefono: customerPhone,
+            mail: customerEmail || '',
+            eventoComprado: eventName,
+            montoPagado: amount || 0,
+            idTransaccion: orderId
+          });
+          console.log('📊 Venta registrada en Google Sheets');
+        } catch (sheetError) {
+          console.error('⚠️ No se pudo registrar en Google Sheets:', sheetError.message);
+        }
+      } catch (error) {
+        console.error('❌ Error procesando pago Passline:', error.message || error.error);
+      }
+    });
+
+    return;
 
   } catch (error) {
     console.error('❌ Error en webhook Passline:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 
@@ -200,30 +210,28 @@ async function sendTicketToCustomer(phoneNumber, customerName, customerEmail, ev
   try {
     console.log(`🎟️ Enviando ticket vía Twilio a ${customerName} de email ${customerEmail} (${phoneNumber}) para evento: ${eventName}`);
 
-    // Formatear número de teléfono (remover caracteres especiales)
-    const formattedPhone = phoneNumber.replace(/[^\d]/g, '');
+    // Formatear número de teléfono con prefijo whatsapp:+ requerido por Twilio
+    const cleaned = phoneNumber.replace(/[^\d]/g, '');
+    const formattedPhone = `whatsapp:+${cleaned}`;
 
     // Variables para la plantilla de Twilio
-    // Ajustar los keys según tu plantilla configurada en Twilio
     const contentVariables = {
       '1': ticketUrl
     };
 
-    // Enviar usando plantilla de Twilio (TWILIO_TICKET_CONTENT_SID debe estar en .env)
-    const contentSid = process.env.TWILIO_TICKET_CONTENT_SID;
+    // ContentSid: usar env var, con fallback hardcodeado
+    const contentSid = process.env.TWILIO_TICKET_CONTENT_SID || 'HX901387f67f3fbdc873a5128238b8b01d';
 
-    if (contentSid) {
-      // Enviar con plantilla aprobada (recomendado para mensajes proactivos)
-      await twilioService.sendTemplateMessage(formattedPhone, contentSid, contentVariables);
-    } else {
-      // Fallback: enviar como mensaje de texto libre (solo funciona si hay sesión activa)
-      const message = `🎉 ¡Hola ${customerName}!\n\n¡Tu compra ha sido confirmada! ✅\n\n📌 *Evento:* ${eventName}\n🎫 *Orden:* #${orderId}\n\nAquí está tu ticket:\n${ticketUrl}\n\n*Importante:*\n• Presenta este ticket en la entrada del evento\n• Guarda este mensaje para acceder fácilmente\n• Si tienes dudas, escríbenos aquí mismo\n\n¡Nos vemos en el evento! 🎊`;
+    // Remitente desde variable de entorno
+    const from = process.env.TWILIO_WHATSAPP_FROM;
 
-      console.warn('⚠️ TWILIO_TICKET_CONTENT_SID no configurado, enviando como mensaje libre');
-      await twilioService.sendMessage(formattedPhone, message);
-    }
+    // Log de debug para Railway
+    console.log(`📋 [Debug Twilio] from: ${from} | to: ${formattedPhone} | contentSid: ${contentSid}`);
 
-    console.log(`✅ Ticket enviado exitosamente vía Twilio a ${phoneNumber}`);
+    // Enviar con plantilla aprobada (recomendado para mensajes proactivos)
+    await twilioService.sendTemplateMessage(formattedPhone, contentSid, contentVariables);
+
+    console.log(`✅ Ticket enviado exitosamente vía Twilio a ${formattedPhone}`);
 
   } catch (error) {
     console.error('❌ Error enviando ticket vía Twilio:', error.message || error.error);
