@@ -47,10 +47,20 @@ async function sendSessionMessage(phoneNumber, message) {
     const formattedPhone = phoneNumber.replace(/\+/g, '');
 
     const url = `/api/v1/sendSessionMessage/${formattedPhone}`;
+    const body = { messageText: message, force: true };
+
+    console.log(`📤 [WATI] POST ${WATI_BASE_URL}${url}`);
+    console.log(`📤 [WATI] Headers:`, JSON.stringify({
+      Authorization: `Bearer ${WATI_ACCESS_TOKEN ? WATI_ACCESS_TOKEN.substring(0, 12) + '...' : 'MISSING'}`,
+      'Content-Type': 'application/json'
+    }));
+    console.log(`📤 [WATI] Body:`, JSON.stringify(body));
 
     console.time('⏱️ WATI');
-    const response = await watiClient.post(url, { messageText: message });
+    const response = await watiClient.post(url, body);
     console.timeEnd('⏱️ WATI');
+
+    console.log('📥 [WATI] Respuesta completa de WATI:', JSON.stringify(response.data, null, 2));
 
     return {
       success: true,
