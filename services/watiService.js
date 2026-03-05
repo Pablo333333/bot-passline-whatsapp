@@ -44,18 +44,12 @@ watiClient.interceptors.response.use(
  */
 async function sendSessionMessage(phoneNumber, message) {
   try {
-    // Formatear número de teléfono (asegurar que no tenga +)
     const formattedPhone = phoneNumber.replace(/\+/g, '');
 
-    // Codificar el mensaje para URL (espacios, emojis, etc.)
-    const encodedMessage = encodeURIComponent(message);
+    const url = `/api/v1/sendSessionMessage/${formattedPhone}`;
 
-    // Construir URL con query parameter
-    const url = `/api/v1/sendSessionMessage/${formattedPhone}?messageText=${encodedMessage}`;
-
-    // POST sin body (el texto va en la URL) con timer
     console.time('⏱️ WATI');
-    const response = await watiClient.post(url);
+    const response = await watiClient.post(url, { messageText: message });
     console.timeEnd('⏱️ WATI');
 
     return {
@@ -66,6 +60,9 @@ async function sendSessionMessage(phoneNumber, message) {
 
   } catch (error) {
     console.error('❌ WATI error:', error.response?.status, error.message);
+    if (error.response?.data) {
+      console.error('❌ WATI response.data:', JSON.stringify(error.response.data, null, 2));
+    }
     
     throw {
       success: false,
