@@ -189,9 +189,6 @@ function generateSystemPrompt(eventos, cerebro, userName = null) {
 
   // ── Urban Fest ──
   const urbanFestCanje = safe(cerebro, 'URBAN_FEST.canje', '');
-  const urbanFestBloque = urbanFestCanje
-    ? `2. **URBAN FEST:** Si preguntan por canjes de Urban Fest, responde: "${urbanFestCanje}"`
-    : '';
 
   return `Eres PassBot de Passline. Responde de forma EXTREMADAMENTE BREVE Y CONCISA. Máximo 2-3 líneas por respuesta.
 
@@ -200,7 +197,9 @@ ${saludoInstruccion}
 
 **REGLAS CRÍTICAS DE SOPORTE (PRIORIDAD MÁXIMA):**
 1. **CAMBIOS DE ENTRADAS:** ${politicaCambios}
-${urbanFestBloque}
+
+**CASOS ESPECIALES DE EVENTOS:**
+${urbanFestCanje ? `- Si el usuario menciona EXPLÍCITAMENTE "Urban Fest", informale que: ${urbanFestCanje}. Para cualquier otro evento, ignorá esta instrucción.` : '(Sin casos especiales activos)'}
 
 **TU IDENTIDAD:**
 - Nombre: PassBot
