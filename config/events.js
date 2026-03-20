@@ -9,115 +9,115 @@
  * pero todos los eventos deben cargarse en el Google Sheet:
  */
 
-const EVENTOS_ACTIVOS = [
-  {
-    id: "EVT001",
-    nombre: "Festival Electrónico 2026",
-    fecha: "15 de Marzo 2026",
-    hora: "20:00",
-    ubicacion: "Parque La Carolina, Quito",
-    precioMin: 35,
-    precioMax: 120,
-    precioTexto: "$35 - $120",
-    categorias: ["Música", "Festival", "Electrónica"],
-    linkPassline: "https://passline.ec/eventos/festival-electronico-2026",
-    descripcion: "El festival de música electrónica más grande del año con los mejores DJs internacionales",
-    artistas: ["DJ Snake", "Martin Garrix", "Marshmello"],
-    capacidad: 5000,
-    disponibles: 1200
-  },
-  {
-    id: "EVT002",
-    nombre: "Concierto Rock Nacional",
-    fecha: "22 de Marzo 2026",
-    hora: "19:00",
-    ubicacion: "Teatro Nacional Sucre, Quito",
-    precioMin: 25,
-    precioMax: 80,
-    precioTexto: "$25 - $80",
-    categorias: ["Música", "Concierto", "Rock"],
-    linkPassline: "https://passline.ec/eventos/rock-nacional-2026",
-    descripcion: "Las mejores bandas de rock ecuatoriano en un solo escenario",
-    artistas: ["Rocola Bacalao", "Sal y Mileto", "Mamá Vudú"],
-    capacidad: 800,
-    disponibles: 350
-  },
-  {
-    id: "EVT003",
-    nombre: "Stand Up Comedy Night",
-    fecha: "5 de Abril 2026",
-    hora: "21:00",
-    ubicacion: "Centro de Arte Contemporáneo, Quito",
-    precioMin: 15,
-    precioMax: 35,
-    precioTexto: "$15 - $35",
-    categorias: ["Comedia", "Stand Up", "Entretenimiento"],
-    linkPassline: "https://passline.ec/eventos/comedy-night-2026",
-    descripcion: "Noche de risas con los mejores comediantes del país",
-    artistas: ["Andrés López", "Carlos Vera", "Michela Pincay"],
-    capacidad: 300,
-    disponibles: 50
-  },
-  {
-    id: "EVT004",
-    nombre: "Feria Gastronómica Internacional",
-    fecha: "10-12 de Abril 2026",
-    hora: "12:00 - 22:00",
-    ubicacion: "Plaza Foch, Quito",
-    precioMin: 10,
-    precioMax: 10,
-    precioTexto: "$10 (Entrada general)",
-    categorias: ["Gastronomía", "Feria", "Cultura"],
-    linkPassline: "https://passline.ec/eventos/feria-gastronomica-2026",
-    descripcion: "3 días de experiencias culinarias de todo el mundo",
-    artistas: ["Chefs internacionales", "Food trucks", "Mixología"],
-    capacidad: 10000,
-    disponibles: 8500
-  },
-  {
-    id: "EVT005",
-    nombre: "Torneo de eSports - League of Legends",
-    fecha: "20 de Abril 2026",
-    hora: "14:00",
-    ubicacion: "Centro de Convenciones Metropolitano, Quito",
-    precioMin: 20,
-    precioMax: 60,
-    precioTexto: "$20 - $60",
-    categorias: ["Gaming", "eSports", "Competencia"],
-    linkPassline: "https://passline.ec/eventos/esports-lol-2026",
-    descripcion: "Torneo nacional con premios de $10,000 USD",
-    artistas: ["Equipos nacionales", "Streamers invitados"],
-    capacidad: 2000,
-    disponibles: 900
-  }
-];
+// const EVENTOS_ACTIVOS = [
+//   {
+//     id: "EVT001",
+//     nombre: "Festival Electrónico 2026",
+//     fecha: "15 de Marzo 2026",
+//     hora: "20:00",
+//     ubicacion: "Parque La Carolina, Quito",
+//     precioMin: 35,
+//     precioMax: 120,
+//     precioTexto: "$35 - $120",
+//     categorias: ["Música", "Festival", "Electrónica"],
+//     linkPassline: "https://passline.ec/eventos/festival-electronico-2026",
+//     descripcion: "El festival de música electrónica más grande del año con los mejores DJs internacionales",
+//     artistas: ["DJ Snake", "Martin Garrix", "Marshmello"],
+//     capacidad: 5000,
+//     disponibles: 1200
+//   },
+//   {
+//     id: "EVT002",
+//     nombre: "Concierto Rock Nacional",
+//     fecha: "22 de Marzo 2026",
+//     hora: "19:00",
+//     ubicacion: "Teatro Nacional Sucre, Quito",
+//     precioMin: 25,
+//     precioMax: 80,
+//     precioTexto: "$25 - $80",
+//     categorias: ["Música", "Concierto", "Rock"],
+//     linkPassline: "https://passline.ec/eventos/rock-nacional-2026",
+//     descripcion: "Las mejores bandas de rock ecuatoriano en un solo escenario",
+//     artistas: ["Rocola Bacalao", "Sal y Mileto", "Mamá Vudú"],
+//     capacidad: 800,
+//     disponibles: 350
+//   },
+//   {
+//     id: "EVT003",
+//     nombre: "Stand Up Comedy Night",
+//     fecha: "5 de Abril 2026",
+//     hora: "21:00",
+//     ubicacion: "Centro de Arte Contemporáneo, Quito",
+//     precioMin: 15,
+//     precioMax: 35,
+//     precioTexto: "$15 - $35",
+//     categorias: ["Comedia", "Stand Up", "Entretenimiento"],
+//     linkPassline: "https://passline.ec/eventos/comedy-night-2026",
+//     descripcion: "Noche de risas con los mejores comediantes del país",
+//     artistas: ["Andrés López", "Carlos Vera", "Michela Pincay"],
+//     capacidad: 300,
+//     disponibles: 50
+//   },
+//   {
+//     id: "EVT004",
+//     nombre: "Feria Gastronómica Internacional",
+//     fecha: "10-12 de Abril 2026",
+//     hora: "12:00 - 22:00",
+//     ubicacion: "Plaza Foch, Quito",
+//     precioMin: 10,
+//     precioMax: 10,
+//     precioTexto: "$10 (Entrada general)",
+//     categorias: ["Gastronomía", "Feria", "Cultura"],
+//     linkPassline: "https://passline.ec/eventos/feria-gastronomica-2026",
+//     descripcion: "3 días de experiencias culinarias de todo el mundo",
+//     artistas: ["Chefs internacionales", "Food trucks", "Mixología"],
+//     capacidad: 10000,
+//     disponibles: 8500
+//   },
+//   {
+//     id: "EVT005",
+//     nombre: "Torneo de eSports - League of Legends",
+//     fecha: "20 de Abril 2026",
+//     hora: "14:00",
+//     ubicacion: "Centro de Convenciones Metropolitano, Quito",
+//     precioMin: 20,
+//     precioMax: 60,
+//     precioTexto: "$20 - $60",
+//     categorias: ["Gaming", "eSports", "Competencia"],
+//     linkPassline: "https://passline.ec/eventos/esports-lol-2026",
+//     descripcion: "Torneo nacional con premios de $10,000 USD",
+//     artistas: ["Equipos nacionales", "Streamers invitados"],
+//     capacidad: 2000,
+//     disponibles: 900
+//   }
+// ];
 
-const POLITICAS_PASSLINE = {
-  devoluciones: {
-    permitidas: true,
-    condiciones: "Hasta 24 horas antes del evento, con cargo del 10% por gestión administrativa",
-    proceso: "Solicitar a través de soporte@passline.ec con número de orden"
-  },
-  cambios: {
-    permitidos: true,
-    condiciones: "Cambio de fecha solo si el organizador lo autoriza",
-    proceso: "Contactar a soporte en caso de reprogramación"
-  },
-  transferencia: {
-    permitida: true,
-    condiciones: "Se puede transferir el ticket a otra persona hasta 12 horas antes del evento",
-    proceso: "Desde la app o web de Passline, sección 'Mis Tickets'"
-  },
-  menores: {
-    restricciones: "Depende del evento. Ver descripción específica de cada evento",
-    acompañante: "Menores de 12 años deben ir acompañados de un adulto"
-  },
-  acceso: {
-    validacion: "QR code único por ticket",
-    reingreso: "No permitido salvo autorización del organizador",
-    anticipacion: "Llegar 30 minutos antes para validación"
-  }
-};
+// const POLITICAS_PASSLINE = {
+//   devoluciones: {
+//     permitidas: true,
+//     condiciones: "Hasta 24 horas antes del evento, con cargo del 10% por gestión administrativa",
+//     proceso: "Solicitar a través de soporte@passline.ec con número de orden"
+//   },
+//   cambios: {
+//     permitidos: true,
+//     condiciones: "Cambio de fecha solo si el organizador lo autoriza",
+//     proceso: "Contactar a soporte en caso de reprogramación"
+//   },
+//   transferencia: {
+//     permitida: true,
+//     condiciones: "Se puede transferir el ticket a otra persona hasta 12 horas antes del evento",
+//     proceso: "Desde la app o web de Passline, sección 'Mis Tickets'"
+//   },
+//   menores: {
+//     restricciones: "Depende del evento. Ver descripción específica de cada evento",
+//     acompañante: "Menores de 12 años deben ir acompañados de un adulto"
+//   },
+//   acceso: {
+//     validacion: "QR code único por ticket",
+//     reingreso: "No permitido salvo autorización del organizador",
+//     anticipacion: "Llegar 30 minutos antes para validación"
+//   }
+// };
 
 const METODOS_PAGO = {
   opciones: [
