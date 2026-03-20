@@ -24,7 +24,12 @@ const WATI_EVENT_TYPES = {
   DELIVERY: 'delivery'
 };
 
-// Mensajes de bienvenida predefinidos
+// ══════════════════════════════════════════════════════════════════
+//  ⚠️  DEPRECADO — NO usar estos mensajes en el bot
+//  Los mensajes de bienvenida provienen de Google Sheets,
+//  pestaña "Configuraciones", sección BIENVENIDA.
+//  Editar aquí NO tiene efecto. Actualizar en Sheets.
+// ══════════════════════════════════════════════════════════════════
 const WELCOME_MESSAGES = {
   BUYER: `¡Hola! 👋 Bienvenido a Passline
 

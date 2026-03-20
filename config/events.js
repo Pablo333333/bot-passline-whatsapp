@@ -1,12 +1,17 @@
 /**
- * Base de conocimientos - Eventos de Passline
- * 
- * ⚠️ NOTA IMPORTANTE: 
- * EVENTOS_ACTIVOS ya NO se usa en el bot.
- * Ahora los eventos se leen directamente desde Google Sheets.
- * 
- * Esta sección se mantiene solo como REFERENCIA de la estructura,
- * pero todos los eventos deben cargarse en el Google Sheet:
+ * Base de conocimientos - Referencia estática (NO autorizada para respuestas)
+ *
+ * ══════════════════════════════════════════════════════════════════
+ *  FUENTE DE VERDAD ÚNICA: Google Sheets → pestaña "Configuraciones"
+ * ══════════════════════════════════════════════════════════════════
+ *
+ *  - POLITICAS, FAQ y BIENVENIDA → exclusivamente desde Sheets.
+ *  - EVENTOS                     → exclusivamente desde pestaña "Eventos".
+ *  - Los objetos de este archivo son solo REFERENCIA de estructura;
+ *    NUNCA deben usarse para alimentar el sistema prompt del bot.
+ *
+ *  Si necesitas actualizar una política, un FAQ o un mensaje de
+ *  bienvenida, edítalo en Google Sheets, NO aquí.
  */
 
 // const EVENTOS_ACTIVOS = [
@@ -301,11 +306,11 @@ const SERVICIOS_GRATIS = {
   ]
 };
 
+// Solo se exportan los objetos que están efectivamente definidos.
+// EVENTOS_ACTIVOS, POLITICAS_PASSLINE y FAQ fueron removidos de aquí
+// porque son datos dinámicos que viven en Google Sheets.
 module.exports = {
-  EVENTOS_ACTIVOS,
-  POLITICAS_PASSLINE,
   METODOS_PAGO,
-  FAQ,
   SOPORTE,
   COMISIONES_ORGANIZADOR,
   PROCESO_CREAR_EVENTO,

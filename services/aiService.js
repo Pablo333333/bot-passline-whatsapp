@@ -157,15 +157,16 @@ function generateSystemPrompt(eventos, cerebro, userName = null) {
     ? `El nombre del usuario es ${userName}. Úsalo para saludarlo de forma cordial al inicio de la conversación o cuando lo consideres natural, pero mantén siempre la brevedad.`
     : 'Si no conoces el nombre del usuario, usa un saludo genérico como "¡Hola!" pero mantén siempre la brevedad.';
 
-  // ── Bienvenidas dinámicas ──
-  const bienvenidaComprador = safe(cerebro, 'BIENVENIDA.comprador', '¡Hola! Bienvenido a Passline. ¿En qué puedo ayudarte hoy?');
-  const bienvenidaOrganizador = safe(cerebro, 'BIENVENIDA.organizador', '¡Hola! Bienvenido a Passline. ¿Quieres crear tu evento?');
+  // ── Bienvenidas: EXCLUSIVAMENTE desde Sheets (pestaña Configuraciones) ──
+  const bienvenidaComprador = safe(cerebro, 'BIENVENIDA.comprador', '');
+  const bienvenidaOrganizador = safe(cerebro, 'BIENVENIDA.organizador', '');
 
-  // ── Políticas dinámicas ──
-  const politicaDevoluciones = safe(cerebro, 'POLITICA.devoluciones', 'Consulta las políticas en contacto@passline.ec');
-  const politicaCambios = safe(cerebro, 'POLITICA.cambios', 'Para cambios, contacta a contacto@passline.ec');
-  const politicaTransferencia = safe(cerebro, 'POLITICA.transferencia', 'Puedes transferir tu ticket desde la app o web de Passline');
-  const politicaMenores = safe(cerebro, 'POLITICA.menores', 'Depende del evento. Consulta la descripción del evento.');
+  // ── Políticas: EXCLUSIVAMENTE desde Sheets (pestaña Configuraciones) ──
+  // Los fallbacks NO contienen texto de política para no contradecir a Sheets.
+  const politicaDevoluciones = safe(cerebro, 'POLITICA.devoluciones', '');
+  const politicaCambios = safe(cerebro, 'POLITICA.cambios', '');
+  const politicaTransferencia = safe(cerebro, 'POLITICA.transferencia', '');
+  const politicaMenores = safe(cerebro, 'POLITICA.menores', '');
 
   // ── Organizadores y crear evento ──
   const organizadorInfo = cerebro.ORGANIZADOR || {};
@@ -178,8 +179,8 @@ function generateSystemPrompt(eventos, cerebro, userName = null) {
     .map(([clave, contenido]) => `- ${clave}: ${contenido}`)
     .join('\n');
 
-  // ── Pagos ──
-  const metodosPago = safe(cerebro, 'PAGOS.metodos', 'Tarjetas de crédito/débito, PayPal, transferencia bancaria.');
+  // ── Pagos: EXCLUSIVAMENTE desde Sheets ──
+  const metodosPago = safe(cerebro, 'PAGOS.metodos', '');
 
   // ── FAQ dinámico ──
   const faqInfo = cerebro.FAQ || {};
@@ -192,11 +193,17 @@ function generateSystemPrompt(eventos, cerebro, userName = null) {
 
   return `Eres PassBot de Passline. Responde de forma EXTREMADAMENTE BREVE Y CONCISA. Máximo 2-3 líneas por respuesta.
 
+**══ FUENTE DE VERDAD — PRIORIDAD ABSOLUTA ══**
+Toda la información sobre POLÍTICAS (devoluciones, cambios, transferencias, menores), FAQ y MENSAJES DE BIENVENIDA proviene EXCLUSIVAMENTE de la pestaña "Configuraciones" de Google Sheets y está reflejada en este prompt.
+- Si el campo correspondiente aparece vacío abajo, responde: "Para esa consulta comunícate con nuestro soporte: contacto@passline.ec". NUNCA inventes ni uses otra información.
+- NUNCA uses datos de política, FAQ o bienvenida distintos a los que figuran explícitamente en este prompt.
+- Los eventos provienen de la pestaña "Eventos" y también tienen prioridad sobre cualquier dato inventado.
+
 **SALUDO PERSONALIZADO:**
 ${saludoInstruccion}
 
-**REGLAS CRÍTICAS DE SOPORTE (PRIORIDAD MÁXIMA):**
-1. **CAMBIOS DE ENTRADAS:** ${politicaCambios}
+**REGLAS CRÍTICAS DE SOPORTE (PRIORIDAD MÁXIMA — datos de Sheets):**
+1. **CAMBIOS DE ENTRADAS:** ${politicaCambios || '(no configurado en Sheets — redirigir a soporte)'}
 
 **CASOS ESPECIALES DE EVENTOS:**
 ${urbanFestCanje ? `- Si el usuario menciona EXPLÍCITAMENTE "Urban Fest", informale que: ${urbanFestCanje}. Para cualquier otro evento, ignorá esta instrucción.` : '(Sin casos especiales activos)'}
@@ -213,14 +220,14 @@ ${eventosTexto}
 **PERFILES DE USUARIOS:**
 
 🎟️ **COMPRADOR** - Busca eventos para asistir:
-- Bienvenida: ${bienvenidaComprador}
+- Bienvenida: ${bienvenidaComprador || '(no configurado — usa saludo genérico)'}
 - Pregunta por eventos, fechas, precios, ubicaciones
 - Quiere comprar tickets
 - Necesita ayuda con el proceso de compra
 - Consulta políticas de devolución/cambios
 
 🎪 **ORGANIZADOR** - Quiere crear eventos:
-- Bienvenida: ${bienvenidaOrganizador}
+- Bienvenida: ${bienvenidaOrganizador || '(no configurado — usa saludo genérico)'}
 - Pregunta cómo crear y publicar eventos
 - Consulta comisiones y pagos
 - Busca herramientas de gestión
@@ -235,11 +242,11 @@ ${eventosTexto}
 5. Explica que el ticket llega automáticamente por WhatsApp después del pago
 6. Responde dudas sobre políticas y proceso usando las REGLAS CRÍTICAS DE SOPORTE.
 
-**Información para Compradores:**
-- Métodos de pago: ${metodosPago}
-- Devoluciones: ${politicaDevoluciones}
-- Transferencia de tickets: ${politicaTransferencia}
-- Menores de edad: ${politicaMenores}
+**Información para Compradores (datos de Sheets — NO inventar si está vacío):**
+- Métodos de pago: ${metodosPago || '(no configurado en Sheets)'}
+- Devoluciones: ${politicaDevoluciones || '(no configurado en Sheets — redirigir a soporte)'}
+- Transferencia de tickets: ${politicaTransferencia || '(no configurado en Sheets — redirigir a soporte)'}
+- Menores de edad: ${politicaMenores || '(no configurado en Sheets — redirigir a soporte)'}
 
 **CÓMO RESPONDER A ORGANIZADORES:**
 
@@ -266,8 +273,8 @@ ${crearEventoTexto || '- Ingresa a www.passline.ec → Crear Evento → Completa
 - NO seas repetitivo
 - NO inventes información
 
-**PREGUNTAS FRECUENTES:**
-${faqTexto || '(No hay preguntas frecuentes cargadas)'}
+**PREGUNTAS FRECUENTES (datos de Sheets — NO inventar si está vacío):**
+${faqTexto || '(No hay preguntas frecuentes cargadas en Sheets)'}
 
 **PROCESO DE COMPRA:**
 1. Usuario consulta evento → Le das info completa
