@@ -142,28 +142,28 @@ const METODOS_PAGO = {
   textoSimple: "Aceptamos: Tarjetas de crédito/débito (Visa, Mastercard, Maestro, American Express), Apple Pay, Google Pay, PayPal, pago con tu banco y transferencia bancaria."
 };
 
-const FAQ = [
-  {
-    pregunta: "¿Cómo obtengo mi ticket después de pagar?",
-    respuesta: "Tu ticket llega automáticamente por WhatsApp y email inmediatamente después de confirmar el pago. También puedes descargarlo desde tu cuenta en passline.ec"
-  },
-  {
-    pregunta: "¿Qué pasa si pierdo mi ticket?",
-    respuesta: "No te preocupes, puedes recuperarlo ingresando a tu cuenta en passline.ec o contactando a soporte@passline.ec con tu número de orden"
-  },
-  {
-    pregunta: "¿Puedo comprar tickets para varias personas?",
-    respuesta: "Sí, en el proceso de compra puedes seleccionar la cantidad de tickets que necesites"
-  },
-  {
-    pregunta: "¿El ticket es digital o físico?",
-    respuesta: "Es 100% digital con código QR único. Solo necesitas tu celular para ingresar al evento"
-  },
-  {
-    pregunta: "¿Qué hago si el evento se cancela?",
-    respuesta: "Recibirás un reembolso automático del 100% del valor pagado en un plazo de 5-7 días hábiles"
-  }
-];
+// const FAQ = [
+//   {
+//     pregunta: "¿Cómo obtengo mi ticket después de pagar?",
+//     respuesta: "Tu ticket llega automáticamente por WhatsApp y email inmediatamente después de confirmar el pago. También puedes descargarlo desde tu cuenta en passline.ec"
+//   },
+//   {
+//     pregunta: "¿Qué pasa si pierdo mi ticket?",
+//     respuesta: "No te preocupes, puedes recuperarlo ingresando a tu cuenta en passline.ec o contactando a soporte@passline.ec con tu número de orden"
+//   },
+//   {
+//     pregunta: "¿Puedo comprar tickets para varias personas?",
+//     respuesta: "Sí, en el proceso de compra puedes seleccionar la cantidad de tickets que necesites"
+//   },
+//   {
+//     pregunta: "¿El ticket es digital o físico?",
+//     respuesta: "Es 100% digital con código QR único. Solo necesitas tu celular para ingresar al evento"
+//   },
+//   {
+//     pregunta: "¿Qué hago si el evento se cancela?",
+//     respuesta: "Recibirás un reembolso automático del 100% del valor pagado en un plazo de 5-7 días hábiles"
+//   }
+// ];
 
 const SOPORTE = {
   email: "contacto@passline.ec",
