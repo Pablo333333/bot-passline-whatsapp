@@ -148,7 +148,8 @@ const URLS = {
   DASHBOARD: 'https://app.passline.com',
   SUPPORT: 'https://passline.com/soporte',
   FAQ: 'https://passline.com/faq',
-  TERMS: 'https://passline.com/terminos'
+  TERMS: 'https://passline.com/terminos',
+  LOGO: 'https://home.passline.com/assets/img/icon.png'
 };
 
 module.exports = {

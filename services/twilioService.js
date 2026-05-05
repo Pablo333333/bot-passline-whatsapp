@@ -26,9 +26,10 @@ const client = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN
  * @param {string} phoneNumber - Número de teléfono del destinatario (ej: 521234567890)
  * @param {string} contentSid - SID de la plantilla de contenido en Twilio (ej: HXxxxxxxxxx)
  * @param {Object} contentVariables - Variables para la plantilla (ej: { "1": "Juan", "2": "Concierto" })
+ * @param {string} mediaUrl - URL de una imagen opcional para adjuntar al mensaje (ej: logo)
  * @returns {Promise<Object>} Resultado del envío
  */
-async function sendTemplateMessage(phoneNumber, contentSid, contentVariables = {}) {
+async function sendTemplateMessage(phoneNumber, contentSid, contentVariables = {}, mediaUrl = null) {
   try {
     if (!client) {
       throw new Error('Cliente de Twilio no inicializado. Verificar TWILIO_ACCOUNT_SID y TWILIO_AUTH_TOKEN.');
@@ -39,12 +40,20 @@ async function sendTemplateMessage(phoneNumber, contentSid, contentVariables = {
 
     console.log(`📋 [Twilio] Enviando plantilla ${contentSid} a ${formattedPhone}...`);
 
-    const message = await client.messages.create({
+    const messageParams = {
       from: TWILIO_WHATSAPP_FROM,
       to: formattedPhone,
       contentSid: contentSid,
       contentVariables: JSON.stringify(contentVariables)
-    });
+    };
+
+    // Agregar mediaUrl si está presente
+    if (mediaUrl) {
+      messageParams.mediaUrl = [mediaUrl];
+      console.log(`🖼️ [Twilio] Adjuntando media: ${mediaUrl}`);
+    }
+
+    const message = await client.messages.create(messageParams);
 
     console.log(`✅ [Twilio] Mensaje enviado - SID: ${message.sid}`);
 

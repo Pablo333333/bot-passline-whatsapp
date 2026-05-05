@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const path = require('path');
 const dotenv = require('dotenv');
 
 // Cargar variables de entorno PRIMERO, antes de importar los servicios
@@ -11,6 +10,7 @@ const watiService = require('./services/watiService');
 const twilioService = require('./services/twilioService');
 const aiService = require('./services/aiService');
 const sheetsService = require('./services/sheetsService');
+const { URLS } = require('./config/constants');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -225,11 +225,14 @@ async function sendTicketToCustomer(phoneNumber, customerName, customerEmail, ev
     // Remitente desde variable de entorno
     const from = process.env.TWILIO_WHATSAPP_FROM;
 
+    // URL del logo fijo
+    const logoUrl = URLS.LOGO;
+
     // Log de debug para Railway
-    console.log(`📋 [Debug Twilio] from: ${from} | to: ${formattedPhone} | contentSid: ${contentSid}`);
+    console.log(`📋 [Debug Twilio] from: ${from} | to: ${formattedPhone} | contentSid: ${contentSid} | mediaUrl: ${logoUrl}`);
 
     // Enviar con plantilla aprobada (recomendado para mensajes proactivos)
-    await twilioService.sendTemplateMessage(formattedPhone, contentSid, contentVariables);
+    await twilioService.sendTemplateMessage(formattedPhone, contentSid, contentVariables, logoUrl);
 
     console.log(`✅ Ticket enviado exitosamente vía Twilio a ${formattedPhone}`);
 
