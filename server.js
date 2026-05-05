@@ -220,7 +220,7 @@ async function sendTicketToCustomer(phoneNumber, customerName, customerEmail, ev
     };
 
     // ContentSid: usar env var, con fallback hardcodeado
-    const contentSid = process.env.TWILIO_TICKET_CONTENT_SID || 'HX901387f67f3fbdc873a5128238b8b01d';
+    const contentSid = process.env.TWILIO_TICKET_CONTENT_SID ;
 
     // Remitente desde variable de entorno
     const from = process.env.TWILIO_WHATSAPP_FROM;
